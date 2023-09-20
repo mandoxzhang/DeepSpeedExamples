@@ -15,8 +15,8 @@ class PromptRawDataset(object):
         self.output_path = output_path
         self.seed = seed
         self.local_rank = local_rank
-        if not dataset_name == 'local/jsonfile':
-            self.raw_datasets = load_dataset(dataset_name)
+        # if not dataset_name == 'local/jsonfile':
+        #     self.raw_datasets = load_dataset(dataset_name)
 
     def get_train_data(self):
         return
@@ -51,6 +51,10 @@ class DahoasRmstaticDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "Dahoas/rm-static"
         self.dataset_name_clean = "Dahoas_rm_static"
+        data_files = {}
+        data_files["train"] = '/data/yehua/dataset/rm-static/data/train-00000-of-00001-2a1df75c6bce91ab.parquet'
+        data_files["test"] = '/data/yehua/dataset/rm-static/data/test-00000-of-00001-8c7c51afc6d45980.parquet'
+        self.raw_datasets = load_dataset("parquet", data_files=data_files)
 
     def get_train_data(self):
         return self.raw_datasets["train"]
@@ -305,6 +309,10 @@ class PvduySharegptalpacaoavicunaformatDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "pvduy/sharegpt_alpaca_oa_vicuna_format"
         self.dataset_name_clean = "pvduy_sharegpt_alpaca_oa_vicuna_format"
+        data_files = {}
+        data_files["train"] = '/data/yehua/dataset/sharegpt_alpaca_oa_vicuna_format/data/train-00000-of-00001-23ed8d98fe776723.parquet'
+        data_files["test"] = '/data/yehua/dataset/sharegpt_alpaca_oa_vicuna_format/data/test-00000-of-00001-d6826e90444ee019.parquet'
+        self.raw_datasets = load_dataset("parquet", data_files=data_files)
 
     def get_train_data(self):
         return self.raw_datasets["train"]

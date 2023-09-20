@@ -6,8 +6,8 @@
 import torch
 import deepspeed.comm as dist
 
-GLOBAL_BATCH_SIZE = 32
-MICRO_BATCH_SIZE = 4
+GLOBAL_BATCH_SIZE = 8
+MICRO_BATCH_SIZE = 1
 
 
 def get_train_ds_config(offload,
@@ -52,16 +52,6 @@ def get_train_ds_config(offload,
             "loss_scale_window": 100
         },
         "gradient_clipping": 1.0,
-        "prescale_gradients": False,
-        "wall_clock_breakdown": False,
-        "hybrid_engine": {
-            "enabled": enable_hybrid_engine,
-            "max_out_tokens": max_out_tokens,
-            "inference_tp_size": inference_tp_size,
-            "release_inference_cache": release_inference_cache,
-            "pin_parameters": pin_parameters,
-            "tp_gather_partition_size": tp_gather_partition_size,
-        },
         "tensorboard": {
             "enabled": enable_tensorboard,
             "output_path": f"{tb_path}/ds_tensorboard_logs/",
@@ -92,3 +82,14 @@ def get_eval_ds_config(offload, stage=0):
         "prescale_gradients": False,
         "wall_clock_breakdown": False
     }
+
+# "prescale_gradients": False,
+#         "wall_clock_breakdown": False,
+#         "hybrid_engine": {
+#             "enabled": enable_hybrid_engine,
+#             "max_out_tokens": max_out_tokens,
+#             "inference_tp_size": inference_tp_size,
+#             "release_inference_cache": release_inference_cache,
+#             "pin_parameters": pin_parameters,
+#             "tp_gather_partition_size": tp_gather_partition_size,
+#         }

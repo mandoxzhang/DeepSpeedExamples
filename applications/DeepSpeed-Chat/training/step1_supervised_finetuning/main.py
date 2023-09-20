@@ -9,9 +9,10 @@ import math
 import sys
 
 import torch
+import torch_musa
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
-
+import pdb
 from transformers import (
     AutoModelForCausalLM,
     SchedulerType,
@@ -190,10 +191,10 @@ def main():
     args = parse_args()
 
     if args.local_rank == -1:
-        device = torch.device("cuda")
+        device = torch.device("musa")
     else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
+        torch_musa.set_device(args.local_rank)
+        device = torch.device("musa", args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
@@ -242,7 +243,8 @@ def main():
         args.seed,
         tokenizer,
         args.max_seq_len,
-        sft_only_data_path=args.sft_only_data_path)
+        sft_only_data_path=args.sft_only_data_path,
+        reload=True)
     # DataLoaders creation:
     if args.local_rank == -1:
         train_sampler = RandomSampler(train_dataset)
@@ -297,7 +299,7 @@ def main():
         num_warmup_steps=args.num_warmup_steps,
         num_training_steps=args.num_train_epochs * num_update_steps_per_epoch,
     )
-
+ 
     model, optimizer, _, lr_scheduler = deepspeed.initialize(
         model=model,
         optimizer=optimizer,
@@ -314,8 +316,8 @@ def main():
     print_rank_0(
         f"***** Evaluating perplexity, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    perplexity = evaluation(model, eval_dataloader)
-    print_rank_0(f"ppl: {perplexity}", args.global_rank)
+    # perplexity = evaluation(model, eval_dataloader)
+    # print_rank_0(f"ppl: {perplexity}", args.global_rank)
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -326,6 +328,7 @@ def main():
         for step, batch in enumerate(train_dataloader):
             start = time.time()
             batch = to_device(batch, device)
+            print(batch['input_ids'].size())
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
             if args.print_loss:
